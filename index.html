@@ -261,13 +261,45 @@ html.embed-mode .topbar {
   top:0;
   z-index:40;
   padding:0 18px;
-  height:52px;
-  gap:10px;
+  height:56px;
+  gap:12px;
 }
-html.embed-mode .brand,
-html.embed-mode .crumbs { display:none; }
-html.embed-mode .period { margin-left:auto; }
-html.embed-mode .ask { display:flex; }
+html.embed-mode .brand { display:none; }
+html.embed-mode .crumbs {
+  display:flex;
+  align-items:center;
+  gap:0;
+  margin:0;
+}
+html.embed-mode .crumbs #cb-exec,
+html.embed-mode .crumbs #cb-exec + .sep {
+  display:none;
+}
+html.embed-mode .crumbs button {
+  color:var(--graphite);
+  border:1px solid var(--hair);
+  background:var(--card);
+  padding:7px 14px;
+  font-size:12px;
+  font-weight:500;
+}
+html.embed-mode .crumbs button.on {
+  color:#fff;
+  background:var(--ink);
+  border-color:var(--ink);
+  font-weight:600;
+}
+html.embed-mode .crumbs #cb-list {
+  border-radius:999px 0 0 999px;
+}
+html.embed-mode .crumbs #cb-card {
+  border-radius:0 999px 999px 0;
+  border-left:0;
+}
+html.embed-mode .crumbs .sep { display:none; }
+html.embed-mode .spacer { flex:1; }
+html.embed-mode .period { margin-left:0; }
+html.embed-mode .ask { display:none; }
 html.embed-mode .wrap { max-width:none; padding:18px 18px 50px; }
 html.embed-mode .demo-tag { display:none; }
 
@@ -627,7 +659,13 @@ function go(v){
   });
   window.scrollTo({top:0,behavior:"smooth"});
 }
-document.querySelectorAll(".crumbs button").forEach(b=>b.onclick=()=>go(b.dataset.go));
+document.querySelectorAll(".crumbs button").forEach(b=>{
+  b.addEventListener("click",(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    go(b.dataset.go);
+  });
+});
 
 function openCard(rank){
   const d=DATA.find(x=>x.rank===rank); if(!d)return;
@@ -661,7 +699,11 @@ function setPeriod(year){
   if(de){ de.textContent=h.d; de.className="delta "+h.dc; }
 }
 document.querySelectorAll("#period button").forEach(b=>{
-  b.addEventListener("click",()=>setPeriod(b.dataset.y));
+  b.addEventListener("click",(e)=>{
+    e.preventDefault();
+    e.stopPropagation();
+    setPeriod(b.dataset.y);
+  });
 });
 
 /* ---------- drawer ---------- */
@@ -680,6 +722,10 @@ renderTable();
   const params = new URLSearchParams(window.location.search);
   if (params.get("embed") === "1") {
     document.documentElement.classList.add("embed-mode");
+  }
+  // In embedded Creatio mode open directly on the TOP-100 view.
+  if (params.get("embed") === "1") {
+    go("list");
   }
   // Ensure the initial selected year is rendered consistently in both
   // standalone GitHub Pages and Creatio iframe mode.
