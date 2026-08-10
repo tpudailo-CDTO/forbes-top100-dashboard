@@ -271,10 +271,6 @@ html.embed-mode .crumbs {
   gap:0;
   margin:0;
 }
-html.embed-mode .crumbs #cb-exec,
-html.embed-mode .crumbs #cb-exec + .sep {
-  display:none;
-}
 html.embed-mode .crumbs button {
   color:var(--graphite);
   border:1px solid var(--hair);
@@ -723,10 +719,7 @@ renderTable();
   if (params.get("embed") === "1") {
     document.documentElement.classList.add("embed-mode");
   }
-  // In embedded Creatio mode open directly on the TOP-100 view.
-  if (params.get("embed") === "1") {
-    go("list");
-  }
+  // Keep the same default view as the standalone dashboard.
   // Ensure the initial selected year is rendered consistently in both
   // standalone GitHub Pages and Creatio iframe mode.
   setPeriod(document.querySelector("#period button.on")?.dataset.y || "2026");
