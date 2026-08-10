@@ -251,8 +251,23 @@ html, body { min-height: 100%; }
 body { overflow-x: hidden; }
 @media (max-width: 1180px) { .wrap { max-width: none; } }
 
-/* ---------- optional clean iframe mode: ?embed=1 ---------- */
-html.embed-mode .topbar { display:none; }
+/* ---------- iframe mode: ?embed=1 ---------- */
+/* Keep the interactive year switch visible inside Creatio.
+   Previously the whole topbar was hidden in embed mode, which also hid
+   2024/2025/2026 and made the embedded dashboard look non-interactive. */
+html.embed-mode .topbar {
+  display:flex;
+  position:sticky;
+  top:0;
+  z-index:40;
+  padding:0 18px;
+  height:52px;
+  gap:10px;
+}
+html.embed-mode .brand,
+html.embed-mode .crumbs { display:none; }
+html.embed-mode .period { margin-left:auto; }
+html.embed-mode .ask { display:flex; }
 html.embed-mode .wrap { max-width:none; padding:18px 18px 50px; }
 html.embed-mode .demo-tag { display:none; }
 
@@ -629,13 +644,24 @@ function openCard(rank){
 }
 
 /* ---------- period toggle (hero numbers) ---------- */
-const HERO={2024:{rev:"₴142,1 млн",d:"▲ +6,0%",dc:"up"},2025:{rev:"₴161,6 млн",d:"▲ +13,7%",dc:"up"},2026:{rev:"₴184,6 млн",d:"▲ +14,2%",dc:"up"}};
-document.querySelectorAll("#period button").forEach(b=>b.onclick=()=>{
-  document.querySelectorAll("#period button").forEach(x=>x.classList.remove("on"));b.classList.add("on");
-  const y=b.dataset.y,h=HERO[y];
-  document.getElementById("heroRev").textContent=h.rev;
-  document.getElementById("heroYear").textContent=y;
-  const de=document.getElementById("heroDelta");de.textContent=h.d;de.className="delta "+h.dc;
+const HERO={
+  2024:{rev:"₴142,1 млн",d:"▲ +6,0%",dc:"up"},
+  2025:{rev:"₴161,6 млн",d:"▲ +13,7%",dc:"up"},
+  2026:{rev:"₴184,6 млн",d:"▲ +14,2%",dc:"up"}
+};
+function setPeriod(year){
+  const h=HERO[String(year)];
+  if(!h) return;
+  document.querySelectorAll("#period button").forEach(x=>x.classList.toggle("on",x.dataset.y===String(year)));
+  const rev=document.getElementById("heroRev");
+  const yr=document.getElementById("heroYear");
+  const de=document.getElementById("heroDelta");
+  if(rev) rev.textContent=h.rev;
+  if(yr) yr.textContent=year;
+  if(de){ de.textContent=h.d; de.className="delta "+h.dc; }
+}
+document.querySelectorAll("#period button").forEach(b=>{
+  b.addEventListener("click",()=>setPeriod(b.dataset.y));
 });
 
 /* ---------- drawer ---------- */
@@ -655,6 +681,9 @@ renderTable();
   if (params.get("embed") === "1") {
     document.documentElement.classList.add("embed-mode");
   }
+  // Ensure the initial selected year is rendered consistently in both
+  // standalone GitHub Pages and Creatio iframe mode.
+  setPeriod(document.querySelector("#period button.on")?.dataset.y || "2026");
 })();
 
 </script>
